@@ -1,0 +1,41 @@
+---
+// components
+import Container from "../../elements/Container.astro";
+import Heading from "../../elements/Heading.astro";
+
+// content collections
+---
+
+<Container variant={"lg"} class="items-center">
+  <Heading tagName="h2" tagSize="h2" class="text-center" id="tour-dates">
+    Tour Dates
+  </Heading>
+  <Container class="grid lg:grid-cols-1 grid-cols-1 gap-16">
+    <!-- widget from reverbnation.com -->
+    <div
+      class="widget_iframe"
+      style="display:inline-block;width:100%;height:550px;margin:0;padding:0;border:0;"
+    >
+      <iframe
+        class="widget_iframe"
+        src="https://www.reverbnation.com/widget_code/html_widget/artist_3214869?widget_id=52&posted_by=artist_3214869&pwc[design]=default&pwc[background_color]=%23333333&pwc[layout]=detailed&pwc[show_map]=0&pwc[size]=fit"
+        width="100%"
+        height="100%"
+        frameborder="0"
+        scrolling="no"
+        style="width:0px;min-width:100%;max-width:100%;"></iframe><div
+        class="footer_branding"
+        style="margin-top:-5px;font-size:10px;font-family:Arial;"
+      >
+        <center
+          ><a
+            href="https://www.reverbnation.com/band-promotion/promoteit?utm_campaign=a_features_promote_it&utm_medium=widget&utm_source=HTML5_Event_Schedule&utm_content=widgetfooter_Learn how to get your music heard at ReverbNation.com"
+            target="_blank"
+            style="text-decoration:none;color:#444;"
+            >Learn how to get your music heard at ReverbNation.com</a
+          ></center
+        >
+      </div>
+    </div>
+  </Container>
+</Container>
