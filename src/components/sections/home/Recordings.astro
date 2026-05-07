@@ -1,0 +1,36 @@
+---
+// components
+import Container from "../../elements/Container.astro";
+import Heading from "../../elements/Heading.astro";
+import Dropdown from "../../elements/Dropdown.astro";
+import ContainerBottom from "../../elements/ContainerBottom.astro";
+import DrumStemsPlayer from "../../elements/DrumStemsPlayer.astro";
+---
+
+<Container variant={"md"}>
+  <Heading tagName="h2" tagSize="h2" class="text-center">Recordings</Heading>
+  <div class="flex flex-col gap-4">
+    <Container class="flex flex-col gap-4 p-6 border-3 border-base-900">
+      <DrumStemsPlayer
+        stems={[
+          { name: "Kick Drum Raw", src: "/audio/kick-raw.mp3", type: "raw" },
+          { name: "Snare Raw", src: "/audio/snare-raw.mp3", type: "raw" },
+          { name: "Hi-Hat Raw", src: "/audio/hihat-raw.mp3", type: "raw" },
+          {
+            name: "Kick Drum Final",
+            src: "/audio/kick-final.mp3",
+            type: "final",
+          },
+          { name: "Snare Final", src: "/audio/snare-final.mp3", type: "final" },
+          {
+            name: "Hi-Hat Final",
+            src: "/audio/hihat-final.mp3",
+            type: "final",
+          },
+        ]}
+        client:load
+      />
+    </Container>
+    <ContainerBottom />
+  </div>
+</Container>

@@ -1,0 +1,490 @@
+---
+// DrumStemsPlayer.astro - Audio player for drum stems with raw/final switches
+interface Stem {
+  name: string;
+  src: string;
+  type: "raw" | "final";
+}
+
+interface Props {
+  stems: Stem[];
+}
+
+const { stems } = Astro.props;
+
+const rawStems = stems.filter((stem) => stem.type === "raw");
+const finalStems = stems.filter((stem) => stem.type === "final");
+---
+
+<div class="drum-stems-player">
+  <div class="player-header">
+    <div class="title-block">
+      <span class="eyebrow">TRACK LAB</span>
+      <h3>Drum Stem Sessions</h3>
+    </div>
+    <p class="subtitle">
+      Flip between raw takes and finished drum tracks. Pumped full of grit,
+      glitch, and punch.
+    </p>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button id="raw-tab" class="tab-button active" type="button"
+      >Raw Stems</button
+    >
+    <button id="final-tab" class="tab-button" type="button">Final Tracks</button
+    >
+  </div>
+
+  <div class="panels">
+    <div id="raw-panel" class="panel active raw-panel">
+      {
+        rawStems.map((stem, index) => (
+          <div class="stem-item">
+            <div class="stem-badge raw">RAW</div>
+            <div class="stem-meta">
+              <span class="stem-name">{stem.name}</span>
+              <div class="stem-actions">
+                <button
+                  class="play-btn"
+                  data-audio-id={`audio-raw-${index}`}
+                  type="button"
+                >
+                  Play
+                </button>
+                <input
+                  type="range"
+                  class="volume-slider"
+                  data-audio-id={`audio-raw-${index}`}
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value="0.8"
+                  aria-label={`Volume for ${stem.name}`}
+                />
+              </div>
+            </div>
+            <audio id={`audio-raw-${index}`} src={stem.src} preload="none" />
+          </div>
+        ))
+      }
+    </div>
+
+    <div id="final-panel" class="panel final-panel">
+      {
+        finalStems.map((stem, index) => (
+          <div class="stem-item">
+            <div class="stem-badge final">FINAL</div>
+            <div class="stem-meta">
+              <span class="stem-name">{stem.name}</span>
+              <div class="stem-actions">
+                <button
+                  class="play-btn"
+                  data-audio-id={`audio-final-${index}`}
+                  type="button"
+                >
+                  Play
+                </button>
+                <input
+                  type="range"
+                  class="volume-slider"
+                  data-audio-id={`audio-final-${index}`}
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value="0.8"
+                  aria-label={`Volume for ${stem.name}`}
+                />
+              </div>
+            </div>
+            <audio id={`audio-final-${index}`} src={stem.src} preload="none" />
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="global-controls">
+    <button id="play-all" type="button">Play All</button>
+    <button id="pause-all" type="button">Pause All</button>
+    <button id="stop-all" type="button">Stop All</button>
+  </div>
+</div>
+
+<script>
+  const rawTab = document.getElementById("raw-tab");
+  const finalTab = document.getElementById("final-tab");
+  const rawPanel = document.getElementById("raw-panel");
+  const finalPanel = document.getElementById("final-panel");
+
+  rawTab.addEventListener("click", () => {
+    rawTab.classList.add("active");
+    finalTab.classList.remove("active");
+    rawPanel.classList.add("active");
+    finalPanel.classList.remove("active");
+  });
+
+  finalTab.addEventListener("click", () => {
+    finalTab.classList.add("active");
+    rawTab.classList.remove("active");
+    finalPanel.classList.add("active");
+    rawPanel.classList.remove("active");
+  });
+
+  const playButtons = document.querySelectorAll(".play-btn");
+  const volumeSliders = document.querySelectorAll(".volume-slider");
+  const playAllBtn = document.getElementById("play-all");
+  const pauseAllBtn = document.getElementById("pause-all");
+  const stopAllBtn = document.getElementById("stop-all");
+  const audioMap = new Map();
+
+  document.querySelectorAll("audio").forEach((audio) => {
+    audioMap.set(audio.id, audio);
+    audio.volume = 0.8;
+    audio.addEventListener("ended", () => {
+      const button = document.querySelector(`[data-audio-id='${audio.id}']`);
+      if (button) button.textContent = "Play";
+    });
+  });
+
+  function togglePlayButton(button, audio) {
+    if (audio.paused) {
+      audio.play();
+      button.textContent = "Pause";
+    } else {
+      audio.pause();
+      button.textContent = "Play";
+    }
+  }
+
+  playButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const audioId = btn.dataset.audioId;
+      const audio = audioMap.get(audioId);
+      if (!audio) return;
+      togglePlayButton(btn, audio);
+    });
+  });
+
+  volumeSliders.forEach((slider) => {
+    slider.addEventListener("input", () => {
+      const audioId = slider.dataset.audioId;
+      const audio = audioMap.get(audioId);
+      if (!audio) return;
+      audio.volume = slider.value;
+    });
+  });
+
+  playAllBtn.addEventListener("click", () => {
+    audioMap.forEach((audio) => audio.play());
+    playButtons.forEach((btn) => (btn.textContent = "Pause"));
+  });
+
+  pauseAllBtn.addEventListener("click", () => {
+    audioMap.forEach((audio) => audio.pause());
+  });
+
+  stopAllBtn.addEventListener("click", () => {
+    audioMap.forEach((audio) => {
+      audio.pause();
+      audio.currentTime = 0;
+    });
+    playButtons.forEach((btn) => (btn.textContent = "Play"));
+  });
+</script>
+
+<style>
+  :global(.drum-stems-player) {
+    position: relative;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background:
+      radial-gradient(
+        circle at top left,
+        rgba(255, 255, 255, 0.05),
+        transparent 35%
+      ),
+      linear-gradient(135deg, #121212 0%, #0f0f0f 100%);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+      0 30px 80px -40px rgba(0, 0, 0, 0.8);
+    border-radius: 2rem;
+    overflow: hidden;
+  }
+
+  :global(.drum-stems-player::before) {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpath fill='none' stroke='%23fff' stroke-opacity='0.03' stroke-width='2' d='M0 60h120M60 0v120M20 0l100 120M0 100l120-100'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 0.2;
+  }
+
+  .player-header {
+    position: relative;
+    margin-bottom: 1.75rem;
+    z-index: 1;
+  }
+
+  .title-block {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    padding: 0.35rem 0.8rem;
+    background: rgba(204, 53, 21, 0.16);
+    color: #ffb547;
+    font-size: 0.8rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    border: 1px solid rgba(255, 181, 71, 0.18);
+    border-radius: 999px;
+    backdrop-filter: blur(2px);
+  }
+
+  .player-header h3 {
+    margin: 0;
+    font-size: clamp(1.55rem, 2vw, 2rem);
+    letter-spacing: 0.02em;
+    color: #f7f7f7;
+  }
+
+  .subtitle {
+    margin-top: 0.75rem;
+    color: #d9d9d9;
+    max-width: 620px;
+    line-height: 1.7;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .tab-button {
+    padding: 1rem 1.2rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(20, 20, 20, 0.9);
+    color: #e8e8e8;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.85rem;
+    transition: all 160ms ease;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  }
+
+  .tab-button:hover,
+  .tab-button:focus-visible {
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+      0 12px 20px -15px rgba(255, 121, 35, 0.2);
+    outline: none;
+  }
+
+  .tab-button.active {
+    color: #fff;
+    background: linear-gradient(135deg, #22120d 0%, #3e1f14 100%);
+    border-color: rgba(255, 121, 35, 0.35);
+    box-shadow: 0 20px 60px -45px rgba(255, 121, 35, 0.6);
+  }
+
+  .panel {
+    display: none;
+    position: relative;
+    z-index: 1;
+  }
+
+  .panel.active {
+    display: block;
+  }
+
+  .stem-item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 0.9rem;
+    padding: 1rem;
+    border-radius: 1.3rem;
+    background: rgba(10, 10, 10, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stem-item::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle at top right,
+      rgba(255, 255, 255, 0.04),
+      transparent 25%
+    );
+    pointer-events: none;
+  }
+
+  .stem-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 4.2rem;
+    height: 4.2rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    letter-spacing: 0.16em;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1;
+  }
+
+  .stem-badge.raw {
+    background: linear-gradient(
+      135deg,
+      rgba(210, 70, 40, 0.2),
+      rgba(160, 30, 20, 0.25)
+    );
+    color: #ffb547;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+  }
+
+  .stem-badge.final {
+    background: linear-gradient(
+      135deg,
+      rgba(35, 100, 140, 0.2),
+      rgba(20, 50, 90, 0.3)
+    );
+    color: #8ad2ff;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+  }
+
+  .stem-meta {
+    display: grid;
+    gap: 0.75rem;
+    z-index: 1;
+  }
+
+  .stem-name {
+    display: block;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f5f5f5;
+    letter-spacing: 0.01em;
+  }
+
+  .stem-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .play-btn {
+    appearance: none;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    padding: 0.7rem 1rem;
+    border-radius: 999px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+      transform 160ms ease,
+      background 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .play-btn:hover,
+  .play-btn:focus-visible {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+    outline: none;
+  }
+
+  .volume-slider {
+    width: 10rem;
+    accent-color: #ff965a;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+  }
+
+  .global-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    margin-top: 1.5rem;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .global-controls button {
+    min-width: 10rem;
+    padding: 0.95rem 1.1rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.08),
+      rgba(255, 255, 255, 0.04)
+    );
+    color: #fff;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: 999px;
+    cursor: pointer;
+    transition:
+      transform 160ms ease,
+      background 160ms ease;
+  }
+
+  .global-controls button:hover,
+  .global-controls button:focus-visible {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.12);
+    outline: none;
+  }
+
+  .raw-panel {
+    border-left: 4px solid rgba(255, 180, 70, 0.9);
+    padding-left: 1rem;
+  }
+
+  .final-panel {
+    border-left: 4px solid rgba(110, 190, 255, 0.9);
+    padding-left: 1rem;
+  }
+
+  @media (max-width: 640px) {
+    .stem-item {
+      grid-template-columns: 1fr;
+    }
+
+    .stem-actions {
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .volume-slider {
+      width: 100%;
+    }
+
+    .tabs {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
