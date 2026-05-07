@@ -10,17 +10,35 @@ import ImageContainer from "../../elements/ImageContainer.astro";
 import peter2 from "../../../assets/images/peter2.jpg";
 ---
 
-<Container variant={'xl'}>
-    <Heading tagName="h2" tagSize="h2" class="text-center">About</Heading>
-    <div class="flex lg:flex-row lg:gap-16 gap-10 flex-col">
-        <div class="flex flex-col items-start gap-6 lg:pt-6 text-base-900 lg:flex-1">
-            <Text variant={'xl'}>I'm a creative problem-solver who thrives at the intersection of design, strategy, and human behavior.</Text>
-            <Text variant={'sm'}>With a passion for crafting intuitive and delightful experiences, I help brands and startups translate complex challenges into elegant solutions that create meaningful impact.</Text>
-            <Text variant={'sm'}>When I'm not designing, you'll find me exploring coffee shops, experimenting with film photography, or diving into design books. I believe the best design comes from understanding people.</Text>
-            <Link variant={'button'} href="/about">More about me</Link>
-        </div>
-        <div class="w-full lg:h-[500px] h-auto lg:flex-1">
-            <ImageContainer src={peter2} alt="Jamie Gore" />
-        </div>
+<Container variant={"xl"}>
+  <Heading tagName="h2" tagSize="h2" class="text-center">About</Heading>
+  <div class="flex lg:flex-row lg:gap-16 gap-10 flex-col">
+    <div
+      class="flex flex-col items-start gap-6 lg:pt-6 text-base-900 lg:flex-1"
+    >
+      <Text variant={"xl"}
+        >Jamie Gore is a versatile session drummer specialising in Rock, Pop,
+        and Jazz</Text
+      >
+      <Text variant={"sm"}
+        >Born & raised in Liverpool, Jamie quickly rose to the occasion -
+        joining Hollywood's own "Falling Doves" on their USA/Japan tour at age
+        18.</Text
+      >
+      <Text variant={"sm"}
+        >Following this milestone Jamie went on to teach in various schools
+        around the North West, and his work touring has taken him across the UK,
+        Japan, Norway, USA, and France.</Text
+      >
+      <Text variant={"sm"}>
+        More recently, Jamie's studio work has taken his sonic contributions to
+        the silver screen in movies such as "Mother's Pride" - #1 in UK box
+        office within release week.
+      </Text>
+      <Link variant={"button"} href="/about">More about me</Link>
     </div>
+    <div class="w-full lg:h-[500px] h-auto lg:flex-1">
+      <ImageContainer src={peter2} alt="Jamie Gore" />
+    </div>
+  </div>
 </Container>
