@@ -17,15 +17,25 @@ const finalStems = stems.filter((stem) => stem.type === "final");
 ---
 
 <div class="drum-stems-player">
-  <div class="player-header">
-    <div class="title-block">
-      <span class="eyebrow">TRACK LAB</span>
-      <h3>Drum Stem Sessions</h3>
+  <div class="tape-deck-shell">
+    <div class="deck-top">
+      <div class="reel reel-left">
+        <div class="reel-hole"></div>
+      </div>
+      <div class="deck-label">
+        <p class="deck-line">LIVE DRUMS</p>
+        <h3>TRACK TAPE</h3>
+        <p class="deck-note">Raw / Final Stem Sessions</p>
+      </div>
+      <div class="reel reel-right">
+        <div class="reel-hole"></div>
+      </div>
     </div>
-    <p class="subtitle">
-      Flip between raw takes and finished drum tracks. Pumped full of grit,
-      glitch, and punch.
-    </p>
+
+    <div class="deck-display">
+      <span class="display-text">PLAYBACK MODE</span>
+      <div class="display-window">TAPE</div>
+    </div>
   </div>
 
   <div class="tabs" role="tablist">
@@ -52,16 +62,19 @@ const finalStems = stems.filter((stem) => stem.type === "final");
                 >
                   Play
                 </button>
-                <input
-                  type="range"
-                  class="volume-slider"
-                  data-audio-id={`audio-raw-${index}`}
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  value="0.8"
-                  aria-label={`Volume for ${stem.name}`}
-                />
+                <div class="slider-wrap">
+                  <span class="slider-label">Vol</span>
+                  <input
+                    type="range"
+                    class="volume-slider"
+                    data-audio-id={`audio-raw-${index}`}
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value="0.8"
+                    aria-label={`Volume for ${stem.name}`}
+                  />
+                </div>
               </div>
             </div>
             <audio id={`audio-raw-${index}`} src={stem.src} preload="none" />
@@ -85,16 +98,19 @@ const finalStems = stems.filter((stem) => stem.type === "final");
                 >
                   Play
                 </button>
-                <input
-                  type="range"
-                  class="volume-slider"
-                  data-audio-id={`audio-final-${index}`}
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  value="0.8"
-                  aria-label={`Volume for ${stem.name}`}
-                />
+                <div class="slider-wrap">
+                  <span class="slider-label">Vol</span>
+                  <input
+                    type="range"
+                    class="volume-slider"
+                    data-audio-id={`audio-final-${index}`}
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value="0.8"
+                    aria-label={`Volume for ${stem.name}`}
+                  />
+                </div>
               </div>
             </div>
             <audio id={`audio-final-${index}`} src={stem.src} preload="none" />
@@ -116,81 +132,100 @@ const finalStems = stems.filter((stem) => stem.type === "final");
   const finalTab = document.getElementById("final-tab");
   const rawPanel = document.getElementById("raw-panel");
   const finalPanel = document.getElementById("final-panel");
-
-  rawTab.addEventListener("click", () => {
-    rawTab.classList.add("active");
-    finalTab.classList.remove("active");
-    rawPanel.classList.add("active");
-    finalPanel.classList.remove("active");
-  });
-
-  finalTab.addEventListener("click", () => {
-    finalTab.classList.add("active");
-    rawTab.classList.remove("active");
-    finalPanel.classList.add("active");
-    rawPanel.classList.remove("active");
-  });
-
-  const playButtons = document.querySelectorAll(".play-btn");
-  const volumeSliders = document.querySelectorAll(".volume-slider");
   const playAllBtn = document.getElementById("play-all");
   const pauseAllBtn = document.getElementById("pause-all");
   const stopAllBtn = document.getElementById("stop-all");
-  const audioMap = new Map();
 
-  document.querySelectorAll("audio").forEach((audio) => {
-    audioMap.set(audio.id, audio);
-    audio.volume = 0.8;
-    audio.addEventListener("ended", () => {
-      const button = document.querySelector(`[data-audio-id='${audio.id}']`);
-      if (button) button.textContent = "Play";
+  if (
+    !rawTab ||
+    !finalTab ||
+    !rawPanel ||
+    !finalPanel ||
+    !playAllBtn ||
+    !pauseAllBtn ||
+    !stopAllBtn
+  ) {
+    // Required DOM elements are missing.
+  } else {
+    rawTab.addEventListener("click", () => {
+      rawTab.classList.add("active");
+      finalTab.classList.remove("active");
+      rawPanel.classList.add("active");
+      finalPanel.classList.remove("active");
     });
-  });
 
-  function togglePlayButton(button, audio) {
-    if (audio.paused) {
-      audio.play();
-      button.textContent = "Pause";
-    } else {
-      audio.pause();
-      button.textContent = "Play";
+    finalTab.addEventListener("click", () => {
+      finalTab.classList.add("active");
+      rawTab.classList.remove("active");
+      finalPanel.classList.add("active");
+      rawPanel.classList.remove("active");
+    });
+
+    const playButtons =
+      document.querySelectorAll<HTMLButtonElement>(".play-btn");
+    const volumeSliders =
+      document.querySelectorAll<HTMLInputElement>(".volume-slider");
+    const audioMap = new Map<string, HTMLAudioElement>();
+
+    document.querySelectorAll<HTMLAudioElement>("audio").forEach((audio) => {
+      audioMap.set(audio.id, audio);
+      audio.volume = 0.8;
+      audio.addEventListener("ended", () => {
+        const button = document.querySelector<HTMLButtonElement>(
+          `[data-audio-id='${audio.id}']`,
+        );
+        if (button) button.textContent = "Play";
+      });
+    });
+
+    function togglePlayButton(
+      button: HTMLButtonElement,
+      audio: HTMLAudioElement,
+    ) {
+      if (audio.paused) {
+        audio.play();
+        button.textContent = "Pause";
+      } else {
+        audio.pause();
+        button.textContent = "Play";
+      }
     }
+
+    playButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const audioId = btn.dataset.audioId;
+        const audio = audioId ? audioMap.get(audioId) : undefined;
+        if (!audio) return;
+        togglePlayButton(btn, audio);
+      });
+    });
+
+    volumeSliders.forEach((slider) => {
+      slider.addEventListener("input", () => {
+        const audioId = slider.dataset.audioId;
+        const audio = audioId ? audioMap.get(audioId) : undefined;
+        if (!audio) return;
+        audio.volume = Number(slider.value);
+      });
+    });
+
+    playAllBtn.addEventListener("click", () => {
+      audioMap.forEach((audio) => audio.play());
+      playButtons.forEach((btn) => (btn.textContent = "Pause"));
+    });
+
+    pauseAllBtn.addEventListener("click", () => {
+      audioMap.forEach((audio) => audio.pause());
+    });
+
+    stopAllBtn.addEventListener("click", () => {
+      audioMap.forEach((audio) => {
+        audio.pause();
+        audio.currentTime = 0;
+      });
+      playButtons.forEach((btn) => (btn.textContent = "Play"));
+    });
   }
-
-  playButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const audioId = btn.dataset.audioId;
-      const audio = audioMap.get(audioId);
-      if (!audio) return;
-      togglePlayButton(btn, audio);
-    });
-  });
-
-  volumeSliders.forEach((slider) => {
-    slider.addEventListener("input", () => {
-      const audioId = slider.dataset.audioId;
-      const audio = audioMap.get(audioId);
-      if (!audio) return;
-      audio.volume = slider.value;
-    });
-  });
-
-  playAllBtn.addEventListener("click", () => {
-    audioMap.forEach((audio) => audio.play());
-    playButtons.forEach((btn) => (btn.textContent = "Pause"));
-  });
-
-  pauseAllBtn.addEventListener("click", () => {
-    audioMap.forEach((audio) => audio.pause());
-  });
-
-  stopAllBtn.addEventListener("click", () => {
-    audioMap.forEach((audio) => {
-      audio.pause();
-      audio.currentTime = 0;
-    });
-    playButtons.forEach((btn) => (btn.textContent = "Play"));
-  });
 </script>
 
 <style>
@@ -198,13 +233,7 @@ const finalStems = stems.filter((stem) => stem.type === "final");
     position: relative;
     padding: 2rem;
     border: 1px solid rgba(255, 255, 255, 0.12);
-    background:
-      radial-gradient(
-        circle at top left,
-        rgba(255, 255, 255, 0.05),
-        transparent 35%
-      ),
-      linear-gradient(135deg, #121212 0%, #0f0f0f 100%);
+    background-color: #111;
     box-shadow:
       inset 0 0 0 1px rgba(255, 255, 255, 0.06),
       0 30px 80px -40px rgba(0, 0, 0, 0.8);
@@ -216,14 +245,125 @@ const finalStems = stems.filter((stem) => stem.type === "final");
     content: "";
     position: absolute;
     inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpath fill='none' stroke='%23fff' stroke-opacity='0.03' stroke-width='2' d='M0 60h120M60 0v120M20 0l100 120M0 100l120-100'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpath fill='none' stroke='%23fff' stroke-opacity='0.04' stroke-width='1' d='M0 10h100M0 90h100M10 0v100M90 0v100'/%3E%3C/svg%3E");
     pointer-events: none;
-    opacity: 0.2;
+    opacity: 0.18;
+  }
+
+  .tape-deck-shell {
+    display: grid;
+    gap: 1rem;
+    padding: 1.2rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #161616;
+    border-radius: 1.6rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .deck-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .reel {
+    width: 5.4rem;
+    height: 5.4rem;
+    border-radius: 50%;
+    background: #0f0f0f;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    display: grid;
+    place-items: center;
+    position: relative;
+  }
+
+  .reel::before {
+    content: "";
+    position: absolute;
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 50%;
+    background: #1f1f1f;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .reel::after {
+    content: "";
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: #111;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .reel-hole {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    background: #ddd;
+    z-index: 1;
+  }
+
+  .deck-label {
+    flex: 1;
+    min-width: 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .deck-line,
+  .deck-note {
+    margin: 0;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: #bbb;
+  }
+
+  .deck-label h3 {
+    margin: 0;
+    font-size: clamp(1.4rem, 2vw, 1.9rem);
+    color: #fff;
+  }
+
+  .deck-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #111;
+    color: #ddd;
+    border-radius: 1rem;
+  }
+
+  .display-text {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .display-window {
+    min-width: 6.8rem;
+    text-align: center;
+    padding: 0.55rem 0.8rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #141414;
+    color: #fff;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    border-radius: 0.8rem;
   }
 
   .player-header {
     position: relative;
-    margin-bottom: 1.75rem;
+    margin-bottom: 1.5rem;
     z-index: 1;
   }
 
@@ -237,29 +377,27 @@ const finalStems = stems.filter((stem) => stem.type === "final");
   .eyebrow {
     display: inline-flex;
     padding: 0.35rem 0.8rem;
-    background: rgba(204, 53, 21, 0.16);
-    color: #ffb547;
-    font-size: 0.8rem;
-    letter-spacing: 0.25em;
+    background: rgba(255, 255, 255, 0.05);
+    color: #d8a45f;
+    font-size: 0.78rem;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    border: 1px solid rgba(255, 181, 71, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 999px;
-    backdrop-filter: blur(2px);
   }
 
   .player-header h3 {
     margin: 0;
     font-size: clamp(1.55rem, 2vw, 2rem);
     letter-spacing: 0.02em;
-    color: #f7f7f7;
+    color: #f3f3f3;
   }
 
   .subtitle {
     margin-top: 0.75rem;
-    color: #d9d9d9;
+    color: #c4c4c4;
     max-width: 620px;
     line-height: 1.7;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
   }
 
   .tabs {
@@ -274,29 +412,26 @@ const finalStems = stems.filter((stem) => stem.type === "final");
   .tab-button {
     padding: 1rem 1.2rem;
     border: 1px solid rgba(255, 255, 255, 0.12);
-    background: rgba(20, 20, 20, 0.9);
-    color: #e8e8e8;
+    background: rgba(20, 20, 20, 0.95);
+    color: #e3e3e3;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     font-size: 0.85rem;
     transition: all 160ms ease;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
   }
 
   .tab-button:hover,
   .tab-button:focus-visible {
     transform: translateY(-1px);
-    box-shadow:
-      inset 0 0 0 1px rgba(255, 255, 255, 0.12),
-      0 12px 20px -15px rgba(255, 121, 35, 0.2);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
     outline: none;
   }
 
   .tab-button.active {
     color: #fff;
-    background: linear-gradient(135deg, #22120d 0%, #3e1f14 100%);
-    border-color: rgba(255, 121, 35, 0.35);
-    box-shadow: 0 20px 60px -45px rgba(255, 121, 35, 0.6);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
   }
 
   .panel {
@@ -317,9 +452,8 @@ const finalStems = stems.filter((stem) => stem.type === "final");
     margin-bottom: 0.9rem;
     padding: 1rem;
     border-radius: 1.3rem;
-    background: rgba(10, 10, 10, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+    background: rgba(15, 15, 15, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     position: relative;
     overflow: hidden;
   }
@@ -328,12 +462,9 @@ const finalStems = stems.filter((stem) => stem.type === "final");
     content: "";
     position: absolute;
     inset: 0;
-    background: radial-gradient(
-      circle at top right,
-      rgba(255, 255, 255, 0.04),
-      transparent 25%
-    );
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cpath fill='none' stroke='%23fff' stroke-opacity='0.03' stroke-width='1' d='M0 0l140 140M140 0L0 140M70 0v140M0 70h140'/%3E%3C/svg%3E");
     pointer-events: none;
+    opacity: 0.08;
   }
 
   .stem-badge {
@@ -349,28 +480,18 @@ const finalStems = stems.filter((stem) => stem.type === "final");
     text-transform: uppercase;
     color: #fff;
     border: 1px solid rgba(255, 255, 255, 0.12);
-    background: rgba(0, 0, 0, 0.45);
+    background: rgba(0, 0, 0, 0.5);
     z-index: 1;
   }
 
   .stem-badge.raw {
-    background: linear-gradient(
-      135deg,
-      rgba(210, 70, 40, 0.2),
-      rgba(160, 30, 20, 0.25)
-    );
+    background: rgba(120, 40, 25, 0.7);
     color: #ffb547;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
   }
 
   .stem-badge.final {
-    background: linear-gradient(
-      135deg,
-      rgba(35, 100, 140, 0.2),
-      rgba(20, 50, 90, 0.3)
-    );
-    color: #8ad2ff;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+    background: rgba(35, 70, 115, 0.7);
+    color: #9ed8ff;
   }
 
   .stem-meta {
@@ -383,7 +504,7 @@ const finalStems = stems.filter((stem) => stem.type === "final");
     display: block;
     font-size: 1rem;
     font-weight: 700;
-    color: #f5f5f5;
+    color: #f1f1f1;
     letter-spacing: 0.01em;
   }
 
@@ -412,7 +533,7 @@ const finalStems = stems.filter((stem) => stem.type === "final");
   .play-btn:hover,
   .play-btn:focus-visible {
     transform: translateY(-1px);
-    background: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.1);
     box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
     outline: none;
   }
@@ -420,7 +541,19 @@ const finalStems = stems.filter((stem) => stem.type === "final");
   .volume-slider {
     width: 10rem;
     accent-color: #ff965a;
-    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+  }
+
+  .slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .slider-label {
+    color: #c8c8c8;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
   }
 
   .global-controls {
@@ -437,11 +570,7 @@ const finalStems = stems.filter((stem) => stem.type === "final");
     min-width: 10rem;
     padding: 0.95rem 1.1rem;
     border: 1px solid rgba(255, 255, 255, 0.12);
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.08),
-      rgba(255, 255, 255, 0.04)
-    );
+    background: rgba(255, 255, 255, 0.06);
     color: #fff;
     letter-spacing: 0.08em;
     text-transform: uppercase;

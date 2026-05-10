@@ -34,6 +34,15 @@ import jamiegore from "../../../assets/images/jamiegore.jpg";
     vertical-align: baseline;
     line-height: inherit;
   }
+
+  @media (max-width: 600px) {
+    #rotating-phrases {
+      display: block;
+      white-space: normal;
+      word-break: break-word;
+    }
+  }
+
   #rotating-phrases::after {
     content: "";
     display: inline-block;
@@ -90,6 +99,12 @@ import jamiegore from "../../../assets/images/jamiegore.jpg";
   }
 
   async function reserveWidthForLongestPhrase(targetEl, phrases) {
+    // Don't reserve width on mobile
+    if (window.innerWidth < 600) {
+      targetEl.style.minWidth = "auto";
+      return;
+    }
+
     try {
       await document.fonts.ready;
     } catch (e) {
