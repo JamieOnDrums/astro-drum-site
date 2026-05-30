@@ -1,5 +1,5 @@
 <Response>
-    <Play>https://www.jamiegore.uk/public/twilio_test/kerosene-snippet.mp3</Play>
+    <Play>https://www.jamiegore.uk/twilio_test/kerosene-snippet.mp3</Play>
     <Say>Thank you for calling. Goodbye!</Say>
     <Hangup/>
 </Response>
